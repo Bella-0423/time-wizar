@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Time Wizard 時間管理系統</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🧙‍♂️ Time Wizard 時間管理系統</h1>
+        <form id="taskForm">
+            <input type="text" id="taskName" placeholder="輸入待辦事項" required />
+            <input type="number" id="taskTime" placeholder="分鐘" min="1" required />
+            <input type="number" id="taskMood" placeholder="今天心情（1-5）" min="1" max="5" />
+            <button type="submit">新增</button>
+        </form>
+        <ul id="taskList"></ul>
+        <div id="report"></div>
+        <button onclick="generateReport()">📊 一週心情分析</button>
+        <button onclick="downloadChart()">⬇️ 下載圖表</button>
+        <br/><br/>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSe_form_link/viewform" target="_blank">📝 回饋表單</a>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
