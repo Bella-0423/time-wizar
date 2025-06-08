@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>時間魔法師 3.0</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-light">
+  <div class="container py-4">
+    <h2 class="text-center mb-4">時間魔法師 3.0</h2>
+
+    <!-- 輸入區塊 -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5>輸入今日任務</h5>
+        <div class="mb-2">
+          <input id="taskName" class="form-control mb-2" placeholder="任務名稱">
+          <input id="taskTime" class="form-control mb-2" placeholder="所需時間（分鐘）" type="number">
+          <button class="btn btn-primary" onclick="addTask()">新增任務</button>
+        </div>
+        <ul id="taskList" class="list-group"></ul>
+      </div>
+    </div>
+
+    <!-- 執行控制區 -->
+    <div class="mb-4">
+      <button class="btn btn-success" onclick="startSchedule()">開始執行任務</button>
+    </div>
+
+    <!-- 心情輸入區 -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5>請輸入今日心情（1~5）</h5>
+        <input id="moodInput" type="number" min="1" max="5" class="form-control mb-2">
+        <button class="btn btn-secondary" onclick="saveMood()">儲存心情</button>
+      </div>
+    </div>
+
+    <!-- 分析圖區 -->
+    <div>
+      <h5>📊 今日時間分析圖</h5>
+      <canvas id="timeChart"></canvas>
+    </div>
+    <div class="mt-4">
+      <h5>📈 心情週報</h5>
+      <button class="btn btn-info" onclick="generateMoodReport()">產生一週統計</button>
+      <div id="moodReport" class="mt-2"></div>
+    </div>
+  </div>
+
+  <script>
+    let tasks = [];
+    let moodData = JSON.parse(localStorage.getItem('moods')) || [];
+
+    function addTask() {
+      const name = document.getElementById('taskName').value;
+      const time = parseInt(document.getElementById('taskTime').value);
+      if (!name || !time) return alert('請填入任務與時間');
+      tasks.push({ name, time });
+      updateTaskList();
+      document.getElementById('taskName').value = '';
+      document.getElementById('taskTime').value = '';
+    }
+
+    function updateTaskList() {
+      const list = document.getElementById('taskList');
+      list.innerHTML = '';
+      tasks.forEach((task, i) => {
+        const li = document.createElement('li');
+        li.className = 'list-group-item';
+        li.textContent = `${task.name} - ${task.time}分鐘`;
+        list.appendChild(li);
+      });
+    }
+
+    function startSchedule() {
+      if (!tasks.length) return alert('請先新增任務');
+      runNextTask(0);
+    }
+
+    function runNextTask(index) {
+      if (index >= tasks.length) {
+        alert('🎉 任務全部完成！');
+        generateChart();
+        return;
+      }
+      const task = tasks[index];
+      showNotification(`開始任務：${task.name}`);
+      setTimeout(() => {
+        showNotification(`完成任務：${task.name}`);
+        runNextTask(index + 1);
+      }, task.time * 60 * 1000); // 單位是毫秒
+    }
+
+    function showNotification(text) {
+      alert(text); // 視窗跳出通知（可改用 Notification API）
+    }
+
+    function generateChart() {
+      const ctx = document.getElementById('timeChart').getContext('2d');
+      const labels = tasks.map(t => t.name);
+      const data = tasks.map(t => t.time);
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: '時間（分鐘）',
+            data,
+            backgroundColor: 'rgba(75, 192, 192, 0.5)'
+          }]
+        }
+      });
+    }
+
+    function saveMood() {
+      const mood = parseInt(document.getElementById('moodInput').value);
+      if (mood < 1 || mood > 5) return alert('請輸入 1~5');
+      moodData.push({ date: new Date().toLocaleDateString(), mood });
+      localStorage.setItem('moods', JSON.stringify(moodData));
+      alert('已儲存今日心情');
+    }
+
+    function generateMoodReport() {
+      if (moodData.length === 0) return alert('尚無心情資料');
+      const recent = moodData.slice(-7);
+      const avg = (recent.reduce((sum, m) => sum + m.mood, 0) / recent.length).toFixed(2);
+      const report = `📅 平均心情：${avg}<br>📍 記錄天數：${recent.length} 天`;
+      document.getElementById('moodReport').innerHTML = report;
+    }
+  </script>
+</body>
+</html>
